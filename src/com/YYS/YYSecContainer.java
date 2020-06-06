@@ -1,5 +1,7 @@
 package com.YYS;
 import java.io.*;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.FileSystemAlreadyExistsException;
 import java.util.NoSuchElementException;
 public class YYSecContainer {
     int numberOfFiles;                  //tells how many files split is performed in
@@ -16,7 +18,25 @@ public class YYSecContainer {
 
     public YYSecContainer(String fileName, int nof, boolean wMajor, short seq_number){
 
-        fileObject = new File()
+        numberOfFiles = nof;
+        seqNumber = seq_number;
+        major = wMajor;
+        /* Adding file extension to create the new file along with filename
+        * Format: path/filename_seqNumber.yysec
+        */
+        String fileExtension ="_" + String.valueOf(seq_number) + ".yysec";
+        fileName.concat(fileExtension);
+        fileObject = new File(fileName);
+        try {
+            if (!fileObject.createNewFile())
+                    throw new FileAlreadyExistsException(fileName + "already exists.");
+            FileOutputStream fileOut = new FileOutputStream(fileObject);
+            out  = new BufferedOutputStream(fileOut);
+        }catch (FileAlreadyExistsException f){
+            f.printStackTrace();
+        }catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void clearBuffer() {
