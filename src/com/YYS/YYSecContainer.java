@@ -1,35 +1,45 @@
 package com.YYS;
 import java.io.*;
+import java.math.BigInteger;
 import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.FileSystemAlreadyExistsException;
-import java.util.NoSuchElementException;
-public class YYSecContainer {
-    int numberOfFiles;                  //tells how many files split is performed in
-    short seqNumber;                    //Sequence number of current file
-    private boolean major;              //Indicates whether a container is major or not
-    private File fileObject;            //Contains partial BIN data
-    private int trailingBuffer;         //Indicates how many final bits are just buffer bits RANGE(0 -7)
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.zip.*;
+public class YYSecContainer implements Serializable {
+    private String originalFileName;
+    private String fileName;
+    private int numberOfFiles;                  //tells how many files split is performed in
+    private int seqNumber;                    //Sequence number of current file
+    private boolean major;                      //Indicates whether a container is major or not
+    private File fileObject;                    //Contains partial BIN data
+    private long key;                           //for non-major files
+    private BigInteger lock;                    //for major file
+    private int trailingBuffer;                 //Indicates how many final bits are just buffer bits RANGE(0-7)
     /*
     * Following data is used at container build time only
     */
-    private int buffer;                  // one character buffer
-    private int numberOfBits;            // number of bits left to be filled in buffer
-    private BufferedOutputStream out;    // the output stream
+    private transient int buffer;                  // one character buffer
+    private transient int numberOfBits;            // number of bits to be filled in buffer
+    private transient BufferedOutputStream out;    // the output stream
 
-    public YYSecContainer(String fileName, int nof, boolean wMajor, short seq_number){
-
+    public YYSecContainer(String fileName,String orgFl, int nof, boolean wMajor, int seq_number){
+        this.fileName = fileName;
+        this.originalFileName = orgFl;
         numberOfFiles = nof;
         seqNumber = seq_number;
         major = wMajor;
+        numberOfBits=0;
+        buffer=0;
         /* Adding file extension to create the new file along with filename
         * Format: path/filename_seqNumber.yysec
         */
         String fileExtension ="_" + String.valueOf(seq_number) + ".yysec";
-        fileName.concat(fileExtension);
+        fileName += fileExtension;
         fileObject = new File(fileName);
         try {
-            if (!fileObject.createNewFile())
-                    throw new FileAlreadyExistsException(fileName + "already exists.");
+            boolean cont = fileObject.createNewFile();
+            if (!cont)
+                throw new FileAlreadyExistsException(fileName + "already exists.");
             FileOutputStream fileOut = new FileOutputStream(fileObject);
             out  = new BufferedOutputStream(fileOut);
         }catch (FileAlreadyExistsException f){
@@ -39,15 +49,57 @@ public class YYSecContainer {
         }
     }
 
+    //To save current object to file
+    public  void  saveContainer(){
+        String objectName = fileName+"_obj"+"_"+String.valueOf(seqNumber)+".dat";
+        try{
+                FileOutputStream fs = new FileOutputStream(objectName);
+                ObjectOutputStream objectStream = new ObjectOutputStream(fs);
+                //Write current object to file
+                objectStream.writeObject(this);
+                objectStream.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try{
+            File containerObjectFile = new File(objectName);
+            String zipFileName = fileName.concat("_" + String.valueOf(seqNumber)+".zip");
+            FileOutputStream fos = new FileOutputStream(zipFileName);
+            ZipOutputStream zos = new ZipOutputStream(fos);
+            zos.putNextEntry(new ZipEntry(containerObjectFile.getName()));
+            byte[] bytes = Files.readAllBytes(Paths.get(containerObjectFile.getName()));
+            zos.write(bytes, 0, bytes.length);
+            zos.closeEntry();
+            zos.putNextEntry(new ZipEntry(fileObject.getName()));
+            byte[] bytes2 = Files.readAllBytes(Paths.get(fileObject.getName()));
+            zos.write(bytes2, 0, bytes2.length);
+            zos.closeEntry();
+            zos.close();
+            containerObjectFile.delete();
+            out.close();
+            fileObject.delete();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
     private void clearBuffer() {
         if (numberOfBits == 0) return;
         if (numberOfBits > 0) buffer <<= (8 - numberOfBits);
-        try { out.write(buffer); }
+        try {
+            out.write(buffer);
+        }
         catch (IOException e) { e.printStackTrace(); }
         numberOfBits = 0;
         buffer = 0;
     }
-    private void writeBit(boolean bit) {
+    public void writeBit(boolean bit) {
         // add bit to buffer
         buffer <<= 1;
         if (bit) buffer |= 1;
@@ -57,4 +109,37 @@ public class YYSecContainer {
         if (numberOfBits == 8) clearBuffer();
     }
 
+    //clears build time data after container is built
+    public void clearBuildData(){
+        if(numberOfBits !=8 || numberOfBits!=0)
+            trailingBuffer = 8 - numberOfBits;
+        clearBuffer();
+        buffer = 0;
+        numberOfBits = 0;
+    }
+
+
+    public boolean isMajor(){
+        return major;
+    }
+
+    public int getNumberOfFiles(){
+        return numberOfFiles;
+    }
+
+    public int getSeqNumber() {
+        return seqNumber;
+    }
+
+    public BigInteger getLock(){
+            return lock;
+    }
+
+    public long getKey() {
+        return key;
+    }
+
+    public File getFileObject(){
+        return fileObject;
+    }
 }
