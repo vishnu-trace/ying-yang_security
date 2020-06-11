@@ -74,6 +74,7 @@ public class YYSecContainer implements Serializable {
     }
 
     public void fileFlush() throws IOException {
+        clearBuffer();
         out.flush();
     }
 
@@ -91,7 +92,7 @@ public class YYSecContainer implements Serializable {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        // Creating a zip package to keep container an its respected object file together
+        // Creating a zip package to keep container and its respected object file together
         try{
             File containerObjectFile = new File(objectName);
             String zipFileName = fileName.concat("_" + String.valueOf(seqNumber)+".zip");

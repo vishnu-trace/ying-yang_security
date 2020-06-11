@@ -36,7 +36,9 @@ public class Main {
             secContainer2.saveContainer();
             System.out.println("Finished Creation!");
         }else{
+            long time = System.nanoTime();
             CoreMergerSystem CMS = new CoreMergerSystem("testContainer");
+            System.out.println("Elapsed Time: "+ (System.nanoTime()-time));
         }
     }
 }
