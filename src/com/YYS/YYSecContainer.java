@@ -6,15 +6,17 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.zip.*;
 public class YYSecContainer implements Serializable {
-    private String originalFileName;
-    private String fileName;
+
+
+    private String originalFileName;            //Stores the original File Name
+    private String fileName;                    //Stores the current filename
     private int numberOfFiles;                  //tells how many files split is performed in
-    private int seqNumber;                    //Sequence number of current file
-    private boolean major;                      //Indicates whether a container is major or not
-    private File fileObject;                    //Contains partial BIN data
-    private long key;                           //for non-major files
-    private BigInteger lock;                    //for major file
-    private int trailingBuffer;                 //Indicates how many final bits are just buffer bits RANGE(0-7)
+    private int seqNumber;                     //Sequence number of current file
+    private boolean major;                     //Indicates whether a container is major or not
+    private transient File fileObject;         //Contains partial BIN data
+    private long key;                          //for non-major files
+    private BigInteger lock;                   //for major file
+    private int trailingBuffer;                //Indicates how many final bits are just buffer bits RANGE(0-7)
     /*
     * Following data is used at container build time only
     */
@@ -49,8 +51,34 @@ public class YYSecContainer implements Serializable {
         }
     }
 
-    //To save current object to file
+
+    public YYSecContainer(String fileName){
+        numberOfBits=0;
+        buffer=0;
+        fileObject = new File(fileName);
+        try {
+            boolean cont = fileObject.createNewFile();
+            if (!cont)
+                throw new FileAlreadyExistsException(fileName + " already exists.");
+            FileOutputStream fileOut = new FileOutputStream(fileObject);
+            out  = new BufferedOutputStream(fileOut);
+        }catch (FileAlreadyExistsException f){
+            f.printStackTrace();
+        }catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String getOriginalFileName() {
+        return originalFileName;
+    }
+
+    public void fileFlush() throws IOException {
+        out.flush();
+    }
+
     public  void  saveContainer(){
+        //To save current object to file
         String objectName = fileName+"_obj"+"_"+String.valueOf(seqNumber)+".dat";
         try{
                 FileOutputStream fs = new FileOutputStream(objectName);
@@ -63,7 +91,7 @@ public class YYSecContainer implements Serializable {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
+        // Creating a zip package to keep container an its respected object file together
         try{
             File containerObjectFile = new File(objectName);
             String zipFileName = fileName.concat("_" + String.valueOf(seqNumber)+".zip");
@@ -86,6 +114,7 @@ public class YYSecContainer implements Serializable {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
 
 
