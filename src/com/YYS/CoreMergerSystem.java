@@ -14,7 +14,7 @@ public class CoreMergerSystem {
         this.fileName = fileName;
         int seqNumber = 1;
         //Unpacking the zip files for further processing
-        while(1==1) {
+        while(true) {
             String fileNameWExt = fileName + "_" + String.valueOf(seqNumber)+".zip";
             File fileObject1 = new File(fileNameWExt);
             if(!fileObject1.exists()) break;
@@ -54,11 +54,36 @@ public class CoreMergerSystem {
             }
             seqNumber++;
         }
+        checkObjects();
+        merge();
+    }
+
+    //Merging code to create the final file
+    private void merge(){
+        CoreSplitterSystem[] CSS = new CoreSplitterSystem[noOfContainers];
+        for(int seqNumber =1; seqNumber<=noOfContainers; seqNumber++){
+            String fileNameWExtN = this.fileName + "_" + String.valueOf(seqNumber)+".yysec";
+            CSS[seqNumber-1] = new CoreSplitterSystem(fileNameWExtN);
+        }
+        int alternator = 0,flag =0;
+        Boolean bit = null;
+        YYSecContainer finalFile = new YYSecContainer(containers[0].getOriginalFileName());
+        while(flag != noOfContainers){
+            if(CSS[alternator].isEmpty()) flag++;
+            else bit = CSS[alternator].readBit();
+            finalFile.writeBit(bit);
+            alternator = (alternator+1)%noOfContainers;
+        }
+        try { finalFile.fileFlush(); }
+        catch (IOException e) { e.printStackTrace(); }
+    }
+
+    //Verifying presence of all objects
+    private void checkObjects(){
         //files placed in same directory with sub-directory name nullDocument
-        seqNumber =1;
+        int seqNumber =1;
         String fileNameWExt = this.fileName + "_obj_" + String.valueOf(seqNumber)+".dat";
         //loading first container from .dat object file
-
         try {
             FileInputStream fis = new FileInputStream(fileNameWExt);
             ObjectInputStream obj = new ObjectInputStream(fis);
@@ -82,9 +107,9 @@ public class CoreMergerSystem {
         for(seqNumber =1; seqNumber <= noOfContainers; seqNumber++){
             String fileNameWExtN = this.fileName + "_obj_" + String.valueOf(seqNumber)+".dat";
             try{
-            FileInputStream fis = new FileInputStream(fileNameWExtN);
-            ObjectInputStream obj = new ObjectInputStream(fis);
-            containers[seqNumber-1] = (YYSecContainer) obj.readObject();
+                FileInputStream fis = new FileInputStream(fileNameWExtN);
+                ObjectInputStream obj = new ObjectInputStream(fis);
+                containers[seqNumber-1] = (YYSecContainer) obj.readObject();
             } catch (FileNotFoundException e) {
                 System.out.println("All Object Files Not Found.");
                 e.printStackTrace();
@@ -95,23 +120,5 @@ public class CoreMergerSystem {
                 e.printStackTrace();
             }
         }
-
-        CoreSplitterSystem[] CSS = new CoreSplitterSystem[noOfContainers];
-        for(seqNumber =1; seqNumber<=noOfContainers; seqNumber++){
-            String fileNameWExtN = this.fileName + "_" + String.valueOf(seqNumber)+".yysec";
-            CSS[seqNumber-1] = new CoreSplitterSystem(fileNameWExtN);
-        }
-
-        int alternator = 0,flag =0;
-        Boolean bit = null;
-        YYSecContainer finalFile = new YYSecContainer(containers[0].getOriginalFileName());
-        while(flag != noOfContainers){
-            if(CSS[alternator].isEmpty()) flag++;
-            else bit = CSS[alternator].readBit();
-            finalFile.writeBit(bit);
-            alternator = (alternator+1)%noOfContainers;
-        }
-        try { finalFile.fileFlush(); }
-        catch (IOException e) { e.printStackTrace(); }
     }
 }
