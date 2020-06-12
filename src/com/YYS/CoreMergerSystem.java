@@ -1,24 +1,26 @@
 package com.YYS;
 
 import java.io.*;
+import java.rmi.AccessException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public class CoreMergerSystem {
-    YYSecContainer[] containers;
-    int noOfContainers;
-    String workingDir;
-    String fileName;
+    YYSecContainer[] containers;                   //For storing container objects
+    int noOfContainers;                            //Stores no of containers
+    String workingDir;                             // stores path to working directory
+    String fileName;                               // stores zip file name
 
     public CoreMergerSystem( String fileName){
         this.fileName = fileName;
         int seqNumber = 1;
+        String destDir = null;
         //Unpacking the zip files for further processing
         while(true) {
             String fileNameWExt = fileName + "_" + String.valueOf(seqNumber)+".zip";
             File fileObject1 = new File(fileNameWExt);
             if(!fileObject1.exists()) break;
-            String destDir = workingDir = fileObject1.getParent()+"Document";
+            destDir = workingDir = fileObject1.getParent()+"Document";
             destDir.replace("nullDocument", "Document");
             this.fileName = destDir + "/"+ fileName;
             File dest = new File(destDir);
@@ -55,7 +57,17 @@ public class CoreMergerSystem {
             seqNumber++;
         }
         checkObjects();
+        try {
+            verifyAuthenticity();
+        } catch (AccessException e) {
+            e.printStackTrace();
+            System.out.println(e);
+            System.exit(22);
+        }
         merge();
+        assert destDir != null;
+        File dest = new File(destDir);
+        dest.delete();
     }
 
     //Merging code to create the final file
@@ -76,6 +88,15 @@ public class CoreMergerSystem {
         }
         try { finalFile.fileFlush(); }
         catch (IOException e) { e.printStackTrace(); }
+    }
+
+
+    //Verifies the authenticity of the container to make sure all are for the same end file
+    private void verifyAuthenticity() throws AccessException {
+        String key = containers[0].getKey();
+        for(int i=1;i<noOfContainers;i++)
+            if(containers[i].verifyLock(key) != 1)
+                throw new AccessException("Lock and Key Mismatch.");
     }
 
     //Verifying presence of all objects

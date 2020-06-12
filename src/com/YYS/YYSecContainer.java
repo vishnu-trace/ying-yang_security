@@ -1,10 +1,17 @@
 package com.YYS;
 import java.io.*;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.zip.*;
+
 public class YYSecContainer implements Serializable {
 
 
@@ -14,8 +21,8 @@ public class YYSecContainer implements Serializable {
     private int seqNumber;                     //Sequence number of current file
     private boolean major;                     //Indicates whether a container is major or not
     private transient File fileObject;         //Contains partial BIN data
-    private long key;                          //for non-major files
-    private BigInteger lock;                   //for major file
+    private String key;                          //for major file
+    private String lock;                   //for non-major file
     private int trailingBuffer;                //Indicates how many final bits are just buffer bits RANGE(0-7)
     /*
     * Following data is used at container build time only
@@ -24,7 +31,8 @@ public class YYSecContainer implements Serializable {
     private transient int numberOfBits;            // number of bits to be filled in buffer
     private transient BufferedOutputStream out;    // the output stream
 
-    public YYSecContainer(String fileName,String orgFl, int nof, boolean wMajor, int seq_number){
+    public YYSecContainer(String fileName,String orgFl, int nof, boolean wMajor, int seq_number, String key){
+        this.key = key;
         this.fileName = fileName;
         this.originalFileName = orgFl;
         numberOfFiles = nof;
@@ -49,6 +57,8 @@ public class YYSecContainer implements Serializable {
         }catch (IOException e) {
             e.printStackTrace();
         }
+        if(!major)  setLock();
+        else    setKey();
     }
 
 
@@ -77,6 +87,24 @@ public class YYSecContainer implements Serializable {
         clearBuffer();
         out.flush();
     }
+
+    private void setLock(){
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte data[] = md.digest(key.getBytes("UTF-8"));
+            lock = new String(data, StandardCharsets.UTF_8);
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void setKey(){
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+        LocalDateTime now = LocalDateTime.now();
+        key= originalFileName+ ".."+dtf.format(now);
+    }
+
+
 
     public  void  saveContainer(){
         //To save current object to file
@@ -118,7 +146,7 @@ public class YYSecContainer implements Serializable {
 
     }
 
-
+    //pushes the buffer to the outputStream if not full 8 bits appends 0's at end till 8 bit long and then pushes
     private void clearBuffer() {
         if (numberOfBits == 0) return;
         if (numberOfBits > 0) buffer <<= (8 - numberOfBits);
@@ -161,11 +189,21 @@ public class YYSecContainer implements Serializable {
         return seqNumber;
     }
 
-    public BigInteger getLock(){
-            return lock;
+    //Hashes the passed key and verifies with its own lock signature
+    public int verifyLock(String mKey){
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte data[] = md.digest(mKey.getBytes("UTF-8"));
+            String lck = new String(data, StandardCharsets.UTF_8);
+            if(lck.compareTo(lock) == 0) return 1;
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 
-    public long getKey() {
+    // returns the key of the major file
+    public String getKey() {
         return key;
     }
 

@@ -10,9 +10,10 @@ public class Main {
         Scanner in  =new Scanner(System.in);
         int x = in.nextInt();
         if(x == 1) {
-            CoreSplitterSystem CSS = new CoreSplitterSystem("testData.mp4");
-            YYSecContainer secContainer1 = new YYSecContainer("testContainer", "testData.mp4", 2, true, 1);
-            YYSecContainer secContainer2 = new YYSecContainer("testContainer", "testData.mp4", 2, false, 2);
+            CoreSplitterSystem CSS = new CoreSplitterSystem("testData_1.txt");
+            YYSecContainer secContainer1 = new YYSecContainer("testContainer", "testData.txt", 2, true, 1, null);
+            System.out.println(secContainer1.getKey());
+            YYSecContainer secContainer2 = new YYSecContainer("testContainer", "testData.txt", 2, false, 2,secContainer1.getKey());
             int alternator = 0;
             while (!CSS.isEmpty()) {
                 boolean bit = CSS.readBit();
