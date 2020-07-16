@@ -1,13 +1,24 @@
 package com.YYS;
 
-import java.io.IOException;
-import java.util.Scanner;
+import GUI.entryFormEncrypt;
+
+import javax.swing.*;
 
 public class Main {
 
     public static void main(String[] args) {
 	// write your code here
-        Scanner in  =new Scanner(System.in);
+
+        UIManager.setInstalledLookAndFeels(UIManager.getInstalledLookAndFeels());
+
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                entryFormEncrypt form = new entryFormEncrypt();
+                form.setVisible(true);
+            }
+        });
+       /* Scanner in  =new Scanner(System.in);
         int x = in.nextInt();
         if(x == 1) {
             CoreSplitterSystem CSS = new CoreSplitterSystem("testData_1.txt");
@@ -40,6 +51,6 @@ public class Main {
             long time = System.nanoTime();
             CoreMergerSystem CMS = new CoreMergerSystem("testContainer");
             System.out.println("Elapsed Time: "+ (System.nanoTime()-time));
-        }
+        }*/
     }
 }
