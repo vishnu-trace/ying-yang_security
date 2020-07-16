@@ -1,6 +1,6 @@
 package com.YYS;
 
-import GUI.entryFormEncrypt;
+import GUI.UIForm;
 
 import javax.swing.*;
 
@@ -14,7 +14,7 @@ public class Main {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                entryFormEncrypt form = new entryFormEncrypt();
+                UIForm form = new UIForm();
                 form.setVisible(true);
             }
         });

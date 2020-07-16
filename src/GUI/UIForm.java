@@ -1,7 +1,6 @@
 package GUI;
 
-import com.YYS.CoreSplitterSystem;
-import com.YYS.YYSecContainer;
+import com.YYS.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,7 +10,7 @@ import java.io.File;
 import java.io.IOException;
 
 
-public class entryFormEncrypt extends  JFrame{
+public class UIForm extends  JFrame{
     private JPanel basePanel;
     private JTextField srcField;
     private JButton browseButtonSrc;
@@ -29,7 +28,7 @@ public class entryFormEncrypt extends  JFrame{
     private String srcFile;
     private String destDirectory;
 
-    public entryFormEncrypt(){
+    public UIForm(){
         add(basePanel);
         setSize(800,500);
         setTitle("Ying-Yang Security");
@@ -79,6 +78,8 @@ public class entryFormEncrypt extends  JFrame{
             public void actionPerformed(ActionEvent actionEvent) {
                 if(Encrypt.isSelected()) {
                     Console.append("Encryption Process Started...\n");
+                    ConsoleOutputCapturer cos = new ConsoleOutputCapturer();
+                    cos.start();
                     String nofs = splitSelection.getSelectedItem().toString();
                     int nof = Integer.parseInt(nofs);
                     int i = 2;
@@ -119,6 +120,8 @@ public class entryFormEncrypt extends  JFrame{
                         secContainer[i - 2].saveContainer();
                         ++i;
                     }
+                    String output = cos.stop();
+                    Console.append(output + "\n");
                     Console.append("Finished Encryption!\n");
                 }
             }
