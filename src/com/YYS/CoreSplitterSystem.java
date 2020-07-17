@@ -16,7 +16,7 @@ public class CoreSplitterSystem {
             File source = new File(fileName);
             if(source.exists()){
                 //If source file exists
-                System.out.println("File Exists");
+                System.out.println(fileName + " :File Exists");
                 FileInputStream sourceStream = new FileInputStream(source);
                 //Initializing Buffer Input Stream.
                 BuffInputStream = new BufferedInputStream(sourceStream);
@@ -24,7 +24,7 @@ public class CoreSplitterSystem {
                 numberOfBits=0;
                 fillBuffer();
             }
-            else System.out.println("No File Exists");
+            else System.out.println(fileName + "File Not Found");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
