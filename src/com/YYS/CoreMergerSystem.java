@@ -12,17 +12,20 @@ public class CoreMergerSystem {
     String fileName;                               // stores zip file name
 
     public CoreMergerSystem( String fileName){
-        this.fileName = fileName;
+        this.fileName = fileName.replaceAll("_1.zip", "");
+        this.fileName.trim();
+        fileName = this.fileName;
         int seqNumber = 1;
         String destDir = null;
         //Unpacking the zip files for further processing
         while(true) {
+            System.out.println("Searching " + this.fileName);
             String fileNameWExt = fileName + "_" + String.valueOf(seqNumber)+".zip";
             File fileObject1 = new File(fileNameWExt);
             if(!fileObject1.exists()) break;
-            destDir = workingDir = fileObject1.getParent()+"Document";
-            destDir.replace("nullDocument", "Document");
-            this.fileName = destDir + "/"+ fileName;
+            destDir = workingDir = fileObject1.getParent();
+            destDir += "\\YYSout";
+            this.fileName = destDir + "\\" + this.fileName.substring(this.fileName.lastIndexOf("\\")+1);
             File dest = new File(destDir);
             if (!dest.exists()) dest.mkdir();
             FileInputStream fis;
@@ -67,6 +70,8 @@ public class CoreMergerSystem {
         merge();
         assert destDir != null;
         File dest = new File(destDir);
+        for (File subFile : dest.listFiles())
+                subFile.delete();
         dest.delete();
     }
 

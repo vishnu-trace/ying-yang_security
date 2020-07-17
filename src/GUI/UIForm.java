@@ -124,6 +124,15 @@ public class UIForm extends  JFrame{
                     Console.append(output + "\n");
                     Console.append("Finished Encryption!\n");
                 }
+                else{
+                    Console.append("Decryption Process Started...\n");
+                    ConsoleOutputCapturer cos = new ConsoleOutputCapturer();
+                    cos.start();
+                    CoreMergerSystem CMS = new CoreMergerSystem(srcFile);
+                    String output = cos.stop();
+                    Console.append(output + "\n");
+                    Console.append("Finished Encryption!\n\n");
+                }
             }
         });
     }
