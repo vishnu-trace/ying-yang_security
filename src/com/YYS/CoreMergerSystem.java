@@ -1,5 +1,16 @@
 package com.YYS;
 
+/*
+* The Merger System class is responsible for decryption of the yysec files. It requires an absolute path to the first(or major) file in sequence.
+* The decryption process takes each zip file and unzips it to a new directory called YYSout in the zip file's parent directory.
+* Each zip file contains its own object file also the .yysec file to be decrypted.
+* The System takes the object file to verify that each of the parts do indeed belong to each other to make sure no mismatch has occurred.
+* Thus lock on each non-major file is tested against the key of the major file for ensuring the authenticity and avoid a mismatch as mentioned above.
+*
+* The merger system uses the YYSec container system to build the original file by taking bit from each part sequentially in a circular fashion.
+*
+* */
+
 import java.io.*;
 import java.rmi.AccessException;
 import java.util.zip.ZipEntry;

@@ -1,6 +1,9 @@
 package GUI;
 
-import com.YYS.*;
+import com.YYS.ConsoleOutputCapturer;
+import com.YYS.CoreMergerSystem;
+import com.YYS.CoreSplitterSystem;
+import com.YYS.YYSecContainer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -22,14 +25,12 @@ public class UIForm extends  JFrame{
     private JRadioButton Encrypt;
     private JRadioButton Decrypt;
     private JPanel activityPanel;
-    private JLabel destinationFileLabel;
-    private JTextField destField;
-    private JButton browseButtonDest;
     private String srcFile;
     private String destDirectory;
 
-    public UIForm(){
+    public UIForm() throws IOException {
         add(basePanel);
+       // setIconImage(ImageIO.read(new File("Icon.ico")));
         setSize(800,500);
         setTitle("Ying-Yang Security");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -76,6 +77,13 @@ public class UIForm extends  JFrame{
         generateButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
+                if(srcFile == null  || srcFile.isEmpty()){
+                    srcFile = srcField.getText();
+                    if (srcFile.isEmpty()){
+                        Console.append("Please provide source file location. \n");
+                        return;
+                    }
+                }
                 if(Encrypt.isSelected()) {
                     Console.append("Encryption Process Started...\n");
                     ConsoleOutputCapturer cos = new ConsoleOutputCapturer();
@@ -84,11 +92,16 @@ public class UIForm extends  JFrame{
                     int nof = Integer.parseInt(nofs);
                     int i = 2;
                     CoreSplitterSystem CSS = new CoreSplitterSystem(srcFile);
-                    YYSecContainer secContainer1 = new YYSecContainer("testContainer", srcFile, nof, true, 1, null);
+                    String containerName =  srcFile.substring(srcFile.lastIndexOf("\\")+1);
+                    System.out.println(containerName);
+                    String temp[] = containerName.split(".");
+                    if(temp.length != 0)
+                    containerName = temp[temp.length-1];
+                    YYSecContainer secContainer1 = new YYSecContainer(containerName, srcFile, nof, true, 1, null);
                     Console.append("Key: " +  secContainer1.getKey().toString() + "\n");
                     YYSecContainer secContainer[] = new YYSecContainer[nof - 1];
                     while (i <= nof) {
-                        secContainer[i - 2] = new YYSecContainer("testContainer", srcFile, nof, false, i, secContainer1.getKey());
+                        secContainer[i - 2] = new YYSecContainer(containerName, srcFile, nof, false, i, secContainer1.getKey());
                         ++i;
                     }
                     int alternator = 0;
@@ -131,7 +144,7 @@ public class UIForm extends  JFrame{
                     CoreMergerSystem CMS = new CoreMergerSystem(srcFile);
                     String output = cos.stop();
                     Console.append(output + "\n");
-                    Console.append("Finished Encryption!\n\n");
+                    Console.append("Finished Decryption!\n\n");
                 }
             }
         });

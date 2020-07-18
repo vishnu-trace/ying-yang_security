@@ -1,6 +1,5 @@
 package com.YYS;
 import java.io.*;
-import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
@@ -8,9 +7,9 @@ import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.zip.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 public class YYSecContainer implements Serializable {
 
@@ -31,7 +30,7 @@ public class YYSecContainer implements Serializable {
     private transient int numberOfBits;            // number of bits to be filled in buffer
     private transient BufferedOutputStream out;    // the output stream
 
-    public YYSecContainer(String fileName,String orgFl, int nof, boolean wMajor, int seq_number, String key){
+    public YYSecContainer(String fileName, String orgFl, int nof, boolean wMajor, int seq_number, String key){
         this.key = key;
         this.fileName = fileName;
         this.originalFileName = orgFl;
