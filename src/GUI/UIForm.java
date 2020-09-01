@@ -19,7 +19,7 @@ public class UIForm extends  JFrame{
     private JButton browseButtonSrc;
     private JLabel srcLabel;
     private JButton generateButton;
-    private JTextArea Console;
+    public JTextArea Console;
     private JComboBox splitSelection;
     private JLabel splitLabel;
     private JRadioButton Encrypt;
@@ -29,13 +29,13 @@ public class UIForm extends  JFrame{
     private String destDirectory;
 
     public UIForm() throws IOException {
+
         add(basePanel);
        // setIconImage(ImageIO.read(new File("Icon.ico")));
         setSize(800,500);
         setTitle("Ying-Yang Security");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         Component parent = this;
-
         browseButtonSrc.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
